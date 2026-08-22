@@ -1,5 +1,6 @@
-<img src="logo.png" alt="RJelly logo" />
-# RJelly - Fast and simple
+<img src="logo.png" alt="RJelly logo" width="200">
+
+### RJelly - Fast and simple
 <br/>
 
 - New version!! (v1)
