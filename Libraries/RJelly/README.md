@@ -78,3 +78,6 @@ end)
 <br>
 
 That's all, if you're using this library then thanks for using it! 👍
+<br>
+you can check out my examplescript you can instantly execute here!<br>
+[Example script](examplescript.lua)
