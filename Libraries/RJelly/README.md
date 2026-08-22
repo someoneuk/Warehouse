@@ -1,11 +1,11 @@
 <img src="logo.png" alt="RJelly logo" width="200">
 
-# RJelly - Fast and simple
+# RJelly - Fast and simple ⚡
 <br/>
 
 - New version!! (v1)
 
-## This GUI Library is under development.
+## This GUI Library is under development. 👷‍♂️
 <br/>
 
 To use this GUI Library we can start by loading it using
@@ -77,4 +77,4 @@ end)
 ```
 <br>
 
-That's all, if you're using this library then thanks for using it!
+That's all, if you're using this library then thanks for using it! 👍
