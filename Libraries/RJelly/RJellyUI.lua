@@ -1,4 +1,4 @@
--- v1
+-- v2.a
 local rjellyui = {}
 do -- essential functions
 	function AddStroke(v:Instance, col:Color3?, t:number?)
@@ -61,7 +61,7 @@ function rjellyui:MakeWindow(title:string)
 	
 	local isDragging = false
 	Topbar.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then -- touch tap counts same as mouse click now
 			isDragging = true
 			
 			local originalMouse = UserInputService:GetMouseLocation()
@@ -80,7 +80,7 @@ function rjellyui:MakeWindow(title:string)
 	
 	local inputEndedConns = nil
 	inputEndedConns = UserInputService.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 and isDragging then
+		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and isDragging then -- lift finger = same as releasing mouse
 			isDragging = false
 		end
 	end)
@@ -172,7 +172,7 @@ function rjellyui:MakeWindow(title:string)
 	DropdownList.BackgroundColor3 = Color3.new(1,1,1)
 	DropdownList.Position = UDim2.fromScale(1,.5)
 	DropdownList.Size = UDim2.fromOffset(100,200)
-	AddStroke(TabContent_Content)
+	AddStroke(DropdownList) -- was AddStroke(TabContent_Content) before, DropdownList never got its stroke, tiny fix
 	
 	-- sub-sub-sub content :X
 	
@@ -230,7 +230,7 @@ function rjellyui:MakeWindow(title:string)
 		ClickBox.Text = ""
 		ClickBox.Size = UDim2.fromScale(1,1)
 		
-		ClickBox.Activated:Connect(function() -- on clicked tab
+		ClickBox.Activated:Connect(function() -- on clicked tab, Activated already fires for touch tap too so no change needed here
 			
 			-- make current tab content dissappear
 			for _, v in TabContent_Content:GetChildren() do
