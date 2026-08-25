@@ -44,7 +44,7 @@ EnvTab:MakeToggle('Daytime',function(value:boolean)
 end)
 
 EnvTab:MakeToggle('Disable hour effect',function(value:boolean)
-    Lighting.HourCC.Enabled = value
+    Lighting.HourCC.Enabled = not value
 end)
 
 EnvTab:MakeToggle('No Fog',function(value:boolean)
@@ -126,7 +126,7 @@ PlayerTab:MakeToggle('speed hack', function(value)
                         local clampedSpeed = math.clamp(currentSpeed, 33, 50)
                         local alpha = (clampedSpeed - 33) / (50 - 33)
                         
-                        local speedMultiplier = 2.4 + (0 - 2.4) * alpha
+                        local speedMultiplier = 2.6 + (0 - 2.6) * alpha
 
                         char:TranslateBy(hmd.MoveDirection * speedMultiplier * a0 * 10)
                     end
