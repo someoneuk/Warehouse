@@ -53,7 +53,7 @@ local Toggle = Tab:MakeToggle("Toggle",function(value)
   end
 end)
 ```
-> *Below might be incorrect, its kinda confusing to explain*
+> *Below might be incorrect, its kinda confusing to explain*<br>
 Toggles remember their state now, and you can read/set it whenever:
 - `Toggle:GetValue()` - returns true/false
 - `Toggle:SetValue(true)` - force it on/off without firing the callback
