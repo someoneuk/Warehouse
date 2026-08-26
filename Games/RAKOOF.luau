@@ -1,6 +1,6 @@
 -- loadstring(game:HttpGet("https://raw.githubusercontent.com/someoneuk/Warehouse/refs/heads/main/Games/RAKOOF.luau"))()
 local RJelly = loadstring(Game:HttpGet("https://raw.githubusercontent.com/someoneuk/Warehouse/refs/heads/main/Libraries/RJelly/RJellyUI.lua"))()
-local Window = RJelly:MakeWindow("Rakoof v2")
+local Window = RJelly:MakeWindow("Rakoof v2.1")
 
 -- Services
 local Lighting = game:GetService('Lighting')
@@ -543,7 +543,7 @@ ESPTab:MakeToggle('ESP Consumables',function(value)
         "Taco"
     }
     if value then
-        for _, v in workspace.Givers:GetDescendants() do
+        for _, v in workspace.Filter.Givers:GetDescendants() do
             if v:IsA("ProximityPrompt") then
                 local folder = v:FindFirstAncestorWhichIsA('Folder')
                 if folder and table.find(consumablelist, folder.Name) then
