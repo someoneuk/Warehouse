@@ -1,6 +1,7 @@
 -- loadstring(game:HttpGet("https://raw.githubusercontent.com/someoneuk/Warehouse/refs/heads/main/Games/RAKOOF.luau"))()
+-- loadstring(game:HttpGet("https://raw.githubusercontent.com/someoneuk/Warehouse/refs/heads/main/Games/RAKOOF.luau"))()
 local RJelly = loadstring(Game:HttpGet("https://raw.githubusercontent.com/someoneuk/Warehouse/refs/heads/main/Libraries/RJelly/RJellyUI.lua"))()
-local Window = RJelly:MakeWindow("Rakoof v2.1")
+local Window = RJelly:MakeWindow("Rakoof v3")
 
 -- Services
 local Lighting = game:GetService('Lighting')
@@ -15,9 +16,9 @@ speaker.CharacterAdded:Connect(function(a0: Model)
     hmd = a0:WaitForChild('Humanoid')
 end)
 
-local function TPto(cf:CFrame)
+local function TPto(cf:CFrame, amount:number?)
     scriptwidebypass = true
-    for i = 1,10 do
+    for i = 1,amount or 10 do
         char:PivotTo(cf)
         task.wait(.02)
     end
@@ -26,6 +27,7 @@ end
 
 -- Conns
 local ToggleConns1 = {}
+
 local EnvTab = Window:MakeTab('Environment')
 EnvTab:MakeToggle('Fullbright',function(value:boolean)
 
@@ -50,12 +52,12 @@ EnvTab:MakeToggle('Daytime',function(value:boolean)
     if value == true then
         Lighting.ClockTime = 14
         
-        ToggleConns1[1] = Lighting.Changed:Connect(function(a0: string)
+        ToggleConns1[2] = Lighting.Changed:Connect(function(a0: string)
             Lighting.ClockTime = 14
         end)
     else
-        if ToggleConns1[1] then
-            ToggleConns1[1]:Disconnect()
+        if ToggleConns1[2] then
+            ToggleConns1[2]:Disconnect()
         end
 
     end
@@ -69,12 +71,12 @@ end)
 EnvTab:MakeToggle('No Fog',function(value:boolean)
     if value then
         Lighting.Atmosphere.Density = 0
-        ToggleConns1[2] = Lighting.Atmosphere.Changed:Connect(function()
+        ToggleConns1[3] = Lighting.Atmosphere.Changed:Connect(function()
             Lighting.Atmosphere.Density = 0
         end)
     else
-        if ToggleConns1[2] then
-            ToggleConns1[2]:Disconnect()
+        if ToggleConns1[3] then
+            ToggleConns1[3]:Disconnect()
         end
     end
 end)
@@ -251,7 +253,9 @@ local ESPConns = {
     ['lootable'] = {},
     ['flare'] = {},
     ['consumable'] = {},
-    ['player'] = {}
+    ['player'] = {},
+    ['fish'] = {},
+    ['jose'] = {}
 }
 
 local billboards = {
@@ -263,7 +267,8 @@ local billboards = {
     ['flare'] = {},
     ['fish'] = {},
     ['consumable'] = {},
-    ['player'] = {}
+    ['player'] = {},
+    ['jose'] = {}
 }
 
 ESPTab:MakeToggle("ESP Rakoof",function(value)
@@ -506,30 +511,47 @@ ESPTab:MakeToggle('ESP Fish',function(value)
     if value then
         for _, v in workspace.Filter.Givers.Fish:GetChildren() do
             local billboard = createLabel(v.Name, v:GetPivot(), v, Color3.fromRGB(77, 191, 226), false, false, false)
-
+            billboard.Enabled = v.ProximityPrompt.Enabled
             table.insert(billboards['fish'],billboard)
 
-            local conns = nil
-            conns = v.Destroying:Connect(function()
-                billboard['fish'][billboard] = nil
-                conns:Disconnect()
-            end)
-
-            billboard.Destroying:Connect(function()
-                conns:Disconnect()
-            end)
-
+            table.insert(ESPConns['fish'],
+                v.ProximityPrompt.Changed:Connect(function()
+                    billboard.Enabled = v.ProximityPrompt.Enabled
+            end))
         end
-        ESPConns[4] = workspace.Filter.Givers.Fish.ChildAdded:Connect(function(v)
-            local billboard = createLabel(v.Name, v:GetPivot(), v, Color3.fromRGB(77, 191, 226), false, false, false)
-            table.insert(billboards['fish'],billboard)
-        end)
     else
         for _, v in billboards['fish'] do
             v:Destroy()
         end
 
-        ESPConns[4]:Disconnect()
+        for _, v in ESPConns['fish'] do
+            v:Disconnect()
+        end
+    end
+
+end)
+
+ESPTab:MakeToggle('ESP Jose',function(value)
+
+    if value then
+        for _, v in workspace.Filter.Jose:GetChildren() do
+            local billboard = createLabel(v.Name, v:GetPivot(), v, Color3.fromRGB(77, 191, 226), false, false, false)
+            billboard.Enabled = v.ProximityPrompt.Enabled
+            table.insert(billboards['jose'],billboard)
+
+            table.insert(ESPConns['jose'],
+                v.ProximityPrompt.Changed:Connect(function()
+                    billboard.Enabled = v.ProximityPrompt.Enabled
+            end))
+        end
+    else
+        for _, v in billboards['jose'] do
+            v:Destroy()
+        end
+
+        for _, v in ESPConns['jose'] do
+            v:Disconnect()
+        end
     end
 
 end)
@@ -612,6 +634,103 @@ TPTab:MakeButton("Fountain",function()
     TPto(CFrame.new(-157.653854, 18.1484776, 49.5339928, -0.335663259, -3.16137139e-09, -0.941982031, 4.24507274e-09, 1, -4.86876184e-09, 0.941982031, -5.63304692e-09, -0.335663259))
 end)
 
+
+local FarmTab = Window:MakeTab("Farm")
+local farm_conns = {}
+local selected_farm = "survival"
+local selected_farm_label = FarmTab:MakeLabel("Selected farm: "..selected_farm)
+FarmTab:MakeLabel("re-run toggle when changing farm!")
+
+local select_farm = FarmTab:MakeDropdown("Select farm")
+select_farm:AddOption('Survival',function()
+    selected_farm = "survival"
+    selected_farm_label:ChangeLabel("Selected farm: "..selected_farm)
+end)
+select_farm:AddOption('Points',function()
+    selected_farm = "points"
+    selected_farm_label:ChangeLabel("Selected farm: "..selected_farm)
+end)
+
+local globalFarmValue = false
+local startFarmToggle = FarmTab:MakeToggle("Start farming",function(value)
+    globalFarmValue = value
+    if value then
+        for _, v in farm_conns do
+            v:Disconnect()
+        end
+
+        if selected_farm == 'survival' then
+            local rakoof = workspace:WaitForChild('RakoofNPC')
+            local currentLocation = 1
+            table.insert(farm_conns,RunService.Heartbeat:Connect(function(a0: number)
+                local dist = (rakoof:GetPivot().Position - char:GetPivot().Position).Magnitude
+                if dist < 50 then
+                    if currentLocation == 1 then
+                        currentLocation = 0
+                        -- tp to safe place
+                        TPto(CFrame.new(500.091766, 93.9051666, 405.541443, 0.307300508, -0.0322867483, -0.951064825, 0.104542375, 0.994520426, 1.69426203e-05, 0.945852876, -0.0994317606, 0.308991969),100)
+                    elseif currentLocation == 0 then
+                        currentLocation = 1
+                        -- tp to shop
+                        TPto(CFrame.new(-308.619446, 5.1999979, -378.68042, -0.998971283, -8.80571704e-09, -0.0453468189, -8.82592932e-09, 1, 2.45513138e-10, 0.0453468189, 6.45488385e-10, -0.998971283),100) 
+                    end
+                end
+            end))
+            
+        elseif selected_farm == 'points' then
+            local consumablelist = {
+                "Burger",
+                "Chips",
+                "Coffee",
+                "Slushie",
+                "Taco"
+            }
+            local noFoodCount = 0
+            while globalFarmValue do
+                noFoodCount += 1
+                for _, v in workspace.Filter.Givers:GetDescendants() do
+                    if v:IsA("ProximityPrompt") and v.Enabled then
+
+                        local folder = v:FindFirstAncestorWhichIsA("Folder")
+                        if folder and table.find(consumablelist,folder.Name) then
+
+
+                            TPto(v.Parent.CFrame, 30)
+                                fireproximityprompt(v)
+
+                            
+                            task.wait(2)
+                            for _, v in speaker.Backpack:GetChildren() do
+                                if table.find(consumablelist, v.Name) then
+                                    hmd:EquipTool(v)
+                                    break
+                                end
+                            end
+
+                            TPto(CFrame.new(-220.783218, 5.19999981, -375.088318, -0.107194468, 1.0880467e-07, 0.994238079, -1.16531407e-08, 1, -1.10691623e-07, -0.994238079, -2.34515252e-08, -0.107194468),30)
+                                fireproximityprompt(workspace.LocationsFolder.Shop.Capybara.Animal.Attachment.ProximityPrompt)
+                            
+                            task.wait(2)
+                            noFoodCount = 0
+                        end
+                    
+                    end
+
+                    if not value then break end
+                end
+                task.wait(.1)
+                if noFoodCount > 100 then
+                    TPto(CFrame.new(500.091766, 93.9051666, 405.541443, 0.307300508, -0.0322867483, -0.951064825, 0.104542375, 0.994520426, 1.69426203e-05, 0.945852876, -0.0994317606, 0.308991969))
+                end
+            end
+
+        end
+    else
+        for _, v in farm_conns do
+            v:Disconnect()
+        end
+    end
+end)
 
 local InfoTab = Window:MakeTab("Info")
 local GameTimeLabel = InfoTab:MakeLabel("Game time : 0")
