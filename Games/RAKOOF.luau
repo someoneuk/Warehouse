@@ -1,7 +1,6 @@
 -- loadstring(game:HttpGet("https://raw.githubusercontent.com/someoneuk/Warehouse/refs/heads/main/Games/RAKOOF.luau"))()
--- loadstring(game:HttpGet("https://raw.githubusercontent.com/someoneuk/Warehouse/refs/heads/main/Games/RAKOOF.luau"))()
 local RJelly = loadstring(Game:HttpGet("https://raw.githubusercontent.com/someoneuk/Warehouse/refs/heads/main/Libraries/RJelly/RJellyUI.lua"))()
-local Window = RJelly:MakeWindow("Rakoof v3")
+local Window = RJelly:MakeWindow("Rakoof v3.1")
 
 -- Services
 local Lighting = game:GetService('Lighting')
@@ -592,7 +591,7 @@ ESPTab:MakeToggle('ESP Consumables',function(value)
 end)
 
 local TPTab = Window:MakeTab("Teleport")
-
+TPTab:MakeLabel("Tap repeatedly if it keep failing")
 
 TPTab:MakeButton("Safe place",function()
     TPto(CFrame.new(500.091766, 93.9051666, 405.541443, 0.307300508, -0.0322867483, -0.951064825, 0.104542375, 0.994520426, 1.69426203e-05, 0.945852876, -0.0994317606, 0.308991969))
@@ -654,11 +653,12 @@ end)
 local globalFarmValue = false
 local startFarmToggle = FarmTab:MakeToggle("Start farming",function(value)
     globalFarmValue = value
+    scriptwidebypass = value
     if value then
         for _, v in farm_conns do
             v:Disconnect()
         end
-
+        
         if selected_farm == 'survival' then
             local rakoof = workspace:WaitForChild('RakoofNPC')
             local currentLocation = 1
@@ -676,7 +676,6 @@ local startFarmToggle = FarmTab:MakeToggle("Start farming",function(value)
                     end
                 end
             end))
-            
         elseif selected_farm == 'points' then
             local consumablelist = {
                 "Burger",
@@ -685,39 +684,100 @@ local startFarmToggle = FarmTab:MakeToggle("Start farming",function(value)
                 "Slushie",
                 "Taco"
             }
+
+            local rakoof = workspace:FindFirstChild('RakoofNPC')
+            local rakoofFleeing = false
+            local rakoofNotedPos = nil
+
             local noFoodCount = 0
             while globalFarmValue do
-                noFoodCount += 1
-                for _, v in workspace.Filter.Givers:GetDescendants() do
-                    if v:IsA("ProximityPrompt") and v.Enabled then
 
+                -- RAKOOF SAFETY CHECK, runs every loop before farming
+                if rakoof and rakoof.Parent and not rakoofFleeing then
+                    local dist = (rakoof:GetPivot().Position - char:GetPivot().Position).Magnitude
+                    if dist < 50 then
+                        rakoofFleeing = true
+                        rakoofNotedPos = rakoof:GetPivot().Position -- note his position when spotted
+                    end
+                end
+
+                if rakoofFleeing then
+                    TPto(CFrame.new(500.091766, 93.9051666, 405.541443, 0.307300508, -0.0322867483, -0.951064825, 0.104542375, 0.994520426, 1.69426203e-05, 0.945852876, -0.0994317606, 0.308991969),100)
+                    task.wait(.5)
+
+                    if rakoof and rakoof.Parent then
+                        local distFromNoted = (rakoof:GetPivot().Position - rakoofNotedPos).Magnitude
+                        if distFromNoted > 100 then
+                            rakoofFleeing = false
+                            rakoofNotedPos = nil
+                        end
+                    else
+                        -- rakoof despawned entirely, stop fleeing
+                        rakoofFleeing = false
+                        rakoofNotedPos = nil
+                    end
+
+                    continue -- skip farming this round, re-check next loop
+                end
+
+                -- NORMAL FARMING
+                noFoodCount += 1
+                local roundDone = false
+
+                for _, v in workspace.Filter.Givers:GetDescendants() do
+                    if not globalFarmValue or roundDone then break end
+
+                    if v:IsA("ProximityPrompt") and v.Enabled then
                         local folder = v:FindFirstAncestorWhichIsA("Folder")
                         if folder and table.find(consumablelist,folder.Name) then
 
-
-                            TPto(v.Parent.CFrame, 30)
+                            -- keep tping to this spot + firing until food obtained or max attempts
+                            local gotFood = false
+                            local tool = nil
+                            for attempt = 1, 10 do
+                                if not globalFarmValue then break end
+                                TPto(v.Parent.CFrame, 30)
                                 fireproximityprompt(v)
+                                task.wait(.5)
 
-                            
-                            task.wait(2)
-                            for _, v in speaker.Backpack:GetChildren() do
-                                if table.find(consumablelist, v.Name) then
-                                    hmd:EquipTool(v)
-                                    break
+                                for _, item in speaker.Backpack:GetChildren() do
+                                    if table.find(consumablelist, item.Name) then
+                                        tool = item
+                                        gotFood = true
+                                        break
+                                    end
                                 end
+
+                                if gotFood then break end
                             end
 
-                            TPto(CFrame.new(-220.783218, 5.19999981, -375.088318, -0.107194468, 1.0880467e-07, 0.994238079, -1.16531407e-08, 1, -1.10691623e-07, -0.994238079, -2.34515252e-08, -0.107194468),30)
-                                fireproximityprompt(workspace.LocationsFolder.Shop.Capybara.Animal.Attachment.ProximityPrompt)
-                            
-                            task.wait(2)
-                            noFoodCount = 0
-                        end
-                    
-                    end
+                            if gotFood then
+                                hmd:EquipTool(tool)
+                                task.wait(2)
 
-                    if not value then break end
+                                -- keep tping to capybara + feeding until food is gone or max attempts
+                                for attempt = 1, 10 do
+                                    if not globalFarmValue then break end
+                                    if not tool.Parent then break end -- food got consumed, we're done here
+
+                                    TPto(CFrame.new(-220.783218, 5.19999981, -375.088318, -0.107194468, 1.0880467e-07, 0.994238079, -1.16531407e-08, 1, -1.10691623e-07, -0.994238079, -2.34515252e-08, -0.107194468),30)
+                                    fireproximityprompt(workspace.LocationsFolder.Shop.Capybara.Animal.Attachment.ProximityPrompt)
+                                    task.wait(.5)
+                                end
+
+                                noFoodCount = 0
+                                roundDone = true -- got and fed food this round, stop scanning givers, restart outer loop
+                            end
+                            -- if not gotFood, don't break: for loop naturally moves to next giver
+                        end
+                    end
                 end
+
+                if not roundDone then
+                    -- went through every giver and never got food, fallback to safe place
+                    TPto(CFrame.new(500.091766, 93.9051666, 405.541443, 0.307300508, -0.0322867483, -0.951064825, 0.104542375, 0.994520426, 1.69426203e-05, 0.945852876, -0.0994317606, 0.308991969),100)
+                end
+
                 task.wait(.1)
                 if noFoodCount > 100 then
                     TPto(CFrame.new(500.091766, 93.9051666, 405.541443, 0.307300508, -0.0322867483, -0.951064825, 0.104542375, 0.994520426, 1.69426203e-05, 0.945852876, -0.0994317606, 0.308991969))
