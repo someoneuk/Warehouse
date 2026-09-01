@@ -171,7 +171,7 @@ function rjellyui:MakeWindow(title:string)
 	TabContent_Content.ScrollBarThickness = 4
 	TabContent_Content.BackgroundTransparency = 1
 	TabContent_Content.BorderSizePixel = 0
-	TabContent_Content.ClipDescendants = true
+	TabContent_Content.ClipsDescendants  = true
 
 	local DropdownList = Instance.new('Frame')
 	DropdownList.Parent = TabContent
