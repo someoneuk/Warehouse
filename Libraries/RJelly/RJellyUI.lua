@@ -1,4 +1,4 @@
--- v3
+-- v3.1
 -- solo developed (@nichunjelly) >w<
 local rjellyui = {}
 do -- essential functions
@@ -26,10 +26,11 @@ end
 -- initialize
 local UserInputService = game:GetService('UserInputService')
 local RunService = game:GetService('RunService')
+local TweenService = game:GetService("TweenService")
 
 local Screen = Instance.new('ScreenGui')
 Screen.Name = "RJelly"..os.clock()
-Screen.Parent = game:GetService('CoreGui')
+Screen.Parent = game:GetService('CoreGui')or game.Players.LocalPlayer.PlayerGui
 Screen.IgnoreGuiInset = true
 
 function rjellyui:MakeWindow(title:string)
@@ -40,14 +41,12 @@ function rjellyui:MakeWindow(title:string)
 	Window.Name = title or "Window"
 	Window.Position = UDim2.fromOffset(75,75)
 	Window.Size = UDim2.fromOffset(300,300)
-	AddStroke(Window)
-
+	Window.BackgroundTransparency = 1
 	local Topbar = Instance.new('Frame')
 	Topbar.Parent = Window
 	Topbar.Name = "Topbar"
 	Topbar.BackgroundColor3 = Color3.fromRGB(153, 11, 200)
 	Topbar.Size = UDim2.new(1,0,0,25)
-	AddStroke(Topbar)
 
 	local WindowContent = Instance.new('Frame')
 	WindowContent.Parent = Window
@@ -55,8 +54,12 @@ function rjellyui:MakeWindow(title:string)
 	WindowContent.BackgroundColor3 = Color3.new(1,1,1)
 	WindowContent.Size = UDim2.new(1,0,0,getSizeOffset(Window,'y') - getSizeOffset(Topbar,'y')) --!
 	WindowContent.Position = UDim2.fromOffset(0,getSizeOffset(Topbar,'y'))
-	AddStroke(WindowContent)
-
+	WindowContent.BackgroundTransparency = 1
+	WindowContent.BorderSizePixel = 0
+	
+	local Window_UICorner = Instance.new("UICorner")
+	Window_UICorner.Parent = Window
+	Window_UICorner.CornerRadius = UDim.new(0,8)
 
 	-- DRAG SYSTEM --!
 
@@ -129,7 +132,8 @@ function rjellyui:MakeWindow(title:string)
 	TabContent.BackgroundColor3 = Color3.new(1,1,1)
 	TabContent.Position = UDim2.fromOffset(getSizeOffset(Tabs,'x'),0) --!
 	TabContent.Size = UDim2.new(0,getSizeOffset(Window,'x') - getSizeOffset(Tabs,'x'),1,0)
-	AddStroke(TabContent)
+	TabContent.BackgroundTransparency = 1
+	TabContent.BorderSizePixel = 0
 
 
 	-- CLOSE FUNCTION
@@ -165,7 +169,8 @@ function rjellyui:MakeWindow(title:string)
 	TabContent_Content.CanvasSize = UDim2.new()
 	TabContent_Content.ScrollingDirection = Enum.ScrollingDirection.Y
 	TabContent_Content.ScrollBarThickness = 4
-	AddStroke(TabContent_Content)
+	TabContent_Content.BackgroundTransparency = 1
+	TabContent_Content.BorderSizePixel = 0
 
 	local DropdownList = Instance.new('Frame')
 	DropdownList.Parent = TabContent
@@ -204,7 +209,7 @@ function rjellyui:MakeWindow(title:string)
 	-- init window
 	DropdownList.Active = false
 	DropdownList.Visible = false
-	
+
 
 	local Window_Module = {}
 
@@ -212,7 +217,7 @@ function rjellyui:MakeWindow(title:string)
 	function Window_Module:MakeTab(title:string)
 		local Contents = {}
 		local TabContentLayoutOrder = 1
-		
+
 		local Tab = Instance.new('Frame')
 		Tab.Parent = Tabs
 		Tab.BackgroundColor3 = Color3.new(1,1,1)
@@ -256,30 +261,31 @@ function rjellyui:MakeWindow(title:string)
 			obj.LayoutOrder = TabContentLayoutOrder
 			TabContentLayoutOrder += 1
 		end
-		
+
 		local Tab_Module = {}
 
 		function Tab_Module:MakeButton(title:string, callback)
-			local Button = Instance.new('Frame')
+			local Button = Instance.new('CanvasGroup')
 			table.insert(Contents, Button)
 
 			Button.BackgroundColor3 = Color3.new(1,1,1)
 			Button.Size = UDim2.new(1,0,0,30)
 			Button.Name = title or "Button"
+			Button.BackgroundTransparency = 1
+			Button.BorderSizePixel = 0
 			AddContentLayoutOrder(Button)
-			AddStroke(Button)
 
 			local Label = Instance.new('TextLabel')
 			Label.Parent = Button
 			Label.BackgroundTransparency = 1
 			Label.AnchorPoint = Vector2.new(0,.5)
 			Label.Position = UDim2.new(0,5,.5,0)
-			Label.Size = UDim2.fromScale(.6,.6)
+			Label.Size = UDim2.fromScale(.8,.6)
 			Label.TextXAlignment = Enum.TextXAlignment.Left
 			Label.TextWrapped = true
 			Label.TextScaled = true
 			Label.Text = title or "Button"
-			
+
 			local ImageLabel = Instance.new('ImageLabel')
 			ImageLabel.Parent = Button
 			ImageLabel.AnchorPoint = Vector2.new(1,.5)
@@ -294,71 +300,127 @@ function rjellyui:MakeWindow(title:string)
 			local ClickBox = Instance.new('TextButton')
 			ClickBox.Parent = Button
 			ClickBox.Name = "ClickBox"
-			ClickBox.BackgroundTransparency = 1
 			ClickBox.Text = ""
-			ClickBox.Size = UDim2.fromScale(1,1)
+			ClickBox.AnchorPoint = Vector2.new(.5,.5)
+			ClickBox.Position = UDim2.fromScale(.5,.5)
+			ClickBox.Size = UDim2.fromScale(.975,.85)
+			ClickBox.BorderSizePixel = 0
+			ClickBox.ZIndex = 0
+			ClickBox.TextTransparency = .1
+			ClickBox.BackgroundColor3 = Color3.new(1,1,1)
+			ClickBox.AutoButtonColor = false
+			
+			local ClickBox_UICorner = Instance.new('UICorner')
+			ClickBox_UICorner.Parent = ClickBox
+			ClickBox_UICorner.CornerRadius = UDim.new(0,3)
+			
 
 			local function run()
 				local success, result = pcall(callback)
 				return result
 			end
 			ClickBox.Activated:Connect(run)
-			
+
 			local button_module = {}
-			
+
 			function button_module:SetTitle(title:string)
 				Label.Text = title or "Button"
 			end
-			
+
 			function button_module:Activate()
 				run()
 			end
-			
+
 			function button_module:ChangeCallback(New_callback)
 				callback = New_callback
 			end
-			
+
 			return button_module
 		end
 
-		function Tab_Module:MakeToggle(title:string, callback)
-			local Toggle = Instance.new('Frame')
+		function Tab_Module:MakeToggle(title:string, callback, default:boolean)
+			local runningTween = nil
+			local Toggle = Instance.new('CanvasGroup')
 			table.insert(Contents, Toggle)
 
-			Toggle.BackgroundColor3 = Color3.new(1,0,0)
 			Toggle.Size = UDim2.new(1,0,0,30)
+			Toggle.BorderSizePixel = 0
+			Toggle.BackgroundTransparency = 1
 			Toggle.Name = title or "Toggle"
 			AddContentLayoutOrder(Toggle)
-			AddStroke(Toggle)
 
 			local Label = Instance.new('TextLabel')
 			Label.Parent = Toggle
 			Label.BackgroundTransparency = 1
 			Label.AnchorPoint = Vector2.new(0,.5)
 			Label.Position = UDim2.new(0,5,.5,0)
-			Label.Size = UDim2.fromScale(.6,.6)
+			Label.Size = UDim2.fromScale(.75,.6)
 			Label.TextXAlignment = Enum.TextXAlignment.Left
 			Label.TextWrapped = true
 			Label.TextScaled = true
-			Label.TextColor3 = Color3.new(1,1,1)
 			Label.Text = title or "Toggle"
 
 			local ClickBox = Instance.new('TextButton')
 			ClickBox.Parent = Toggle
 			ClickBox.Name = "ClickBox"
-			ClickBox.BackgroundTransparency = 1
 			ClickBox.Text = ""
-			ClickBox.Size = UDim2.fromScale(1,1)
-
-			local value = false
+			ClickBox.AnchorPoint = Vector2.new(.5,.5)
+			ClickBox.Position = UDim2.fromScale(.5,.5)
+			ClickBox.Size = UDim2.fromScale(.975,.85)
+			ClickBox.BorderSizePixel = 0
+			ClickBox.ZIndex = 0
+			ClickBox.TextTransparency = .1
+			ClickBox.BackgroundColor3 = Color3.new(1,1,1)
+			ClickBox.AutoButtonColor = false
+			
+			local ClickBox_UICorner = Instance.new('UICorner')
+			ClickBox_UICorner.Parent = ClickBox
+			ClickBox_UICorner.CornerRadius = UDim.new(0,3)
+			
+			local Background = Instance.new("CanvasGroup")
+			Background.Parent = Toggle
+			Background.AnchorPoint = Vector2.new(1,.5)
+			Background.BackgroundColor3 = Color3.fromRGB(200,200,200)
+			Background.Interactable = false
+			Background.Position = UDim2.fromScale(.95,.5)
+			Background.Size = UDim2.fromScale(.175,.5)
+			Background.BorderSizePixel = 0
+			
+			local Background_UICorner = Instance.new('UICorner')
+			Background_UICorner.Parent = Background
+			Background_UICorner.CornerRadius = UDim.new(0,3)
+			
+			local Slider = Instance.new("Frame")
+			Slider.Parent = Background
+			Slider.BackgroundColor3 = if default then Color3.fromRGB(50,100,200) else Color3.fromRGB(200,0,0)
+			Slider.BorderSizePixel = 0
+			Slider.Size = UDim2.fromScale(.5,1)
+			
+			local Slider_UICorner = Instance.new('UICorner')
+			Slider_UICorner.Parent = Slider
+			Slider_UICorner.CornerRadius = UDim.new(0,3)
+			
+			local value = default
 			local function run()
 				value = not value
-				if value == true then
-					Toggle.BackgroundColor3 = Color3.new(0,1,0)
-					Label.TextColor3 = Color3.new()
-				else
-					Toggle.BackgroundColor3 = Color3.new(1,0,0)
-					Label.TextColor3 = Color3.new(1,1,1)
+				if runningTween then runningTween:Disconnect() end
+				
+				if value then
+					Slider.BackgroundColor3 = Color3.fromRGB(200,0,0)
+					Slider.Position = UDim2.new()
+					runningTween = TweenService:Create(
+						Slider,
+						TweenInfo.new(.5,Enum.EasingStyle.Circular,Enum.EasingDirection.Out),
+						{Position = UDim2.fromScale(.5,0), BackgroundColor3 = Color3.fromRGB(50,100,200)}
+					):Play()
+				elseif not value then
+					Slider.BackgroundColor3 = Color3.fromRGB(50,100,200)
+					Slider.Position = UDim2.fromScale(.5,0)
+					runningTween = TweenService:Create(
+						Slider,
+						TweenInfo.new(.5,Enum.EasingStyle.Circular,Enum.EasingDirection.Out),
+						{Position = UDim2.new(), BackgroundColor3 = Color3.fromRGB(200,0,0)}
+					):Play()
 				end
 
 				pcall(function()
@@ -366,34 +428,35 @@ function rjellyui:MakeWindow(title:string)
 				end)
 
 			end
+			
 			ClickBox.Activated:Connect(run)
-			
+
 			local toggle_module = {}
-			
+
 			function toggle_module:GetValue()
 				return value
 			end
-			
+
 			function toggle_module:SetTitle(title:string)
 				Label.Text = title or 'Toggle'
 			end
-			
+
 			function toggle_module:ChangeCallback(New_callback)
 				callback = New_callback
 			end
-			
+
 			function toggle_module:Activate()
 				run()
 			end
-			
+
 			function toggle_module:SetNextActivationValue(val:boolean)
 				value = not val
 			end
-			
+
 			function toggle_module:SetValue(val:boolean)
 				value = val
 			end
-			
+
 			return toggle_module
 		end
 
@@ -404,8 +467,8 @@ function rjellyui:MakeWindow(title:string)
 			TextInput.BackgroundColor3 = Color3.new(1,1,1)
 			TextInput.Size = UDim2.new(1,0,0,30)
 			TextInput.Name = title or "TextInput"
+			TextInput.BorderSizePixel = 0
 			AddContentLayoutOrder(TextInput)
-			AddStroke(TextInput)
 
 			local Label = Instance.new('TextLabel')
 			Label.Parent = TextInput
@@ -414,7 +477,6 @@ function rjellyui:MakeWindow(title:string)
 			Label.TextWrapped = true
 			Label.TextScaled = true
 			Label.Text = title or "AnyInput"
-			AddStroke(Label)
 
 			local TextBox = Instance.new('TextBox')
 			TextBox.Parent = TextInput
@@ -427,7 +489,7 @@ function rjellyui:MakeWindow(title:string)
 			TextBox.Text = "Input"
 			TextBox.PlaceholderColor3 = Color3.fromRGB(89,89,89)
 			TextBox.TextColor3 = Color3.fromRGB(40,40,40)
-			
+
 			local function run(Input,enterPressed)
 				local success, result = pcall(function()
 					callback(Input,enterPressed)
@@ -437,23 +499,23 @@ function rjellyui:MakeWindow(title:string)
 			TextBox.FocusLost:Connect(run)
 
 			local input_module = {}
-			
+
 			function input_module:Activate(Input,enterPressed)
 				run(Input or "", enterPressed or false)
 			end
-			
+
 			function input_module:SetInput(text:string)
 				TextBox.Text = text or "Input"
 			end
-			
+
 			function input_module:SetTitle(title:string)
 				Label.Text = title or 'TextBox'
 			end
-			
+
 			function input_module:ChangeCallback(New_callback)
 				callback = New_callback
 			end
-			
+
 			return input_module
 		end
 
@@ -465,8 +527,8 @@ function rjellyui:MakeWindow(title:string)
 			Dropdown.BackgroundColor3 = Color3.new(1,1,1)
 			Dropdown.Size = UDim2.new(1,0,0,30)
 			Dropdown.Name = title or "Dropdown"
+			Dropdown.BorderSizePixel = 0
 			AddContentLayoutOrder(Dropdown)
-			AddStroke(Dropdown)
 
 			local Label = Instance.new('TextLabel')
 			Label.Parent = Dropdown
@@ -478,7 +540,7 @@ function rjellyui:MakeWindow(title:string)
 			Label.TextWrapped = true
 			Label.TextScaled = true
 			Label.Text = title or "Dropdown"
-			
+
 			local Preview = Instance.new('Frame')
 			Preview.Parent = Dropdown
 			Preview.AnchorPoint = Vector2.new(1,.5)
@@ -486,14 +548,14 @@ function rjellyui:MakeWindow(title:string)
 			Preview.Size = UDim2.new(0,50,.7,0)
 			Preview.BorderSizePixel = 0
 			Preview.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-			
+
 			local PreviewLabel = Instance.new('TextLabel')
 			PreviewLabel.Parent = Preview
 			PreviewLabel.Size = UDim2.fromScale(1,1)
 			PreviewLabel.BackgroundTransparency = 1
 			PreviewLabel.TextScaled = true
 			PreviewLabel.Text = ". . ."
-			
+
 
 			local ClickBox = Instance.new('TextButton')
 			ClickBox.Parent = Dropdown
@@ -526,26 +588,26 @@ function rjellyui:MakeWindow(title:string)
 					return result
 				end
 				Option.Activated:Connect(run)
-				
+
 				local option_module = {}
-				
+
 				function option_module:Remove()
 					local index = table.find(DropdownContents,Option)
-					
+
 					if index then
 						table.remove(DropdownContents, index)
 					end
 					Option:Destroy()
 				end
-				
+
 				function option_module:Activate()
 					run()
 				end
-				
+
 				function option_module:ChangeTitle(title:string)
 					Option.Text = title or "Option"
 				end
-				
+
 				function option_module:ChangeCallback(New_callback)
 					callback = New_callback
 				end
@@ -580,8 +642,9 @@ function rjellyui:MakeWindow(title:string)
 			Frame.BackgroundColor3 = Color3.new(1,1,1)
 			Frame.Size = UDim2.new(1,0,0,30)
 			Frame.Name = title or "Frame"
+			Frame.BorderSizePixel = 0
 			AddContentLayoutOrder(Frame)
-			
+
 			local Label = Instance.new('TextLabel')
 			Label.Parent = Frame
 			Label.BackgroundTransparency = 1
@@ -590,31 +653,33 @@ function rjellyui:MakeWindow(title:string)
 			Label.Position = UDim2.fromScale(0,.5)
 			Label.Text = title or "Label"
 			Label.TextScaled = true
-			
+
 			local label_module = {}
-			
+
 			function label_module:ChangeLabel(title:string)
 				Label.Text = title or "Label"
 			end
-			
+
 			return label_module
 		end
-		
+
 		function Tab_Module:MakeSpace(px:number)
 			local Frame = Instance.new('Frame')
 			table.insert(Contents, Frame)
 
 			Frame.BackgroundColor3 = Color3.new(1,1,1)
+			Frame.BorderSizePixel = 0
+			Frame.Name = "Space"
 			Frame.Size = UDim2.new(1,0,0,px or 30)
 			Frame.Name = title or "Frame"
 			AddContentLayoutOrder(Frame)
-			
+
 			local space_module = {}
-			
+
 			function space_module:ChangeSize(px:number)
 				Frame.Size = UDim2.new(1,px or 30)
 			end
-			
+
 			return space_module
 		end
 		TabsLayoutOrder += 1
@@ -625,4 +690,52 @@ function rjellyui:MakeWindow(title:string)
 
 end
 
-return rjellyui
+
+
+local Window = rjellyui:MakeWindow("MyWindow")
+local Tab = Window:MakeTab("MyTab")
+
+local Button = Tab:MakeButton("Click me!",function() -- BUTTON
+	-- Here you can run codes
+	print('do something')
+end)
+
+local Toggle = Tab:MakeToggle("Toggle",function(value) -- TOGGLE
+	-- Here you can run codes
+	-- Value is either true/false
+
+	if value == true then
+		print("Toggle on")
+	else
+		print("Toggle off")
+	end
+end)
+
+local Input = Tab:MakeInput("Print ANYTHING",function(input, enterPressed) -- TEXTBOX
+	if enterPressed then
+		print("you typed "..input.." and pressed enter!")
+	else
+		print("you typed "..input.." without pressing enter!")
+	end
+end)
+
+local Dropdown = Tab:MakeDropdown("Dropdown Prints") -- DROPDOWN
+Dropdown:AddOption("Hello",function()
+	print("Hello")
+end)
+
+Dropdown:AddOption("Goodbye",function()
+	print("Goodbye")
+end)
+
+Tab:MakeLabel("Header") -- LABEL
+Tab:MakeSpace(15) -- SPACE, just a gap, doesn't need a variable
+
+-- every element gives you back a module now, so you can control it after making it
+-- here's a couple examples using the Button and Toggle we made above
+
+Button:SetTitle("Click me again!")
+
+if Toggle:GetValue() == false then
+	Toggle:SetNextActivationValue(true) -- next time it's clicked, it'll turn on
+end
