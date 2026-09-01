@@ -171,6 +171,7 @@ function rjellyui:MakeWindow(title:string)
 	TabContent_Content.ScrollBarThickness = 4
 	TabContent_Content.BackgroundTransparency = 1
 	TabContent_Content.BorderSizePixel = 0
+	TabContent_Content.ClipDescendants = true
 
 	local DropdownList = Instance.new('Frame')
 	DropdownList.Parent = TabContent
@@ -246,7 +247,7 @@ function rjellyui:MakeWindow(title:string)
 
 			-- make current tab content dissappear
 			for _, v in TabContent_Content:GetChildren() do
-				if v:IsA('Frame') then
+				if v:IsA('Frame') or v:IsA('CanvasGroup') then
 					v.Parent = nil
 				end
 			end
